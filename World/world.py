@@ -5,9 +5,27 @@ Handled by - Adway
 """
 
 import pygame
+from Utils.config import *
 
 class World:
-    
+
     def __init__(self):
 
         print("World created")
+
+class World:
+
+    def __init__(self):
+
+        pygame.init()
+
+        self.screen = pygame.display.set_mode(
+            (
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT
+            )
+        )
+
+        pygame.display.set_caption(
+            "AutoStack AV Simulator"
+        )
