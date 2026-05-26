@@ -4,4 +4,5 @@ This script is the entry point of the project. This will contain the main workfl
 Handled by - Adway
 """
 
-from World.world import *
+from World.world import World
+sim = World()

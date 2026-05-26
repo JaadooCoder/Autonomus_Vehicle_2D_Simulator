@@ -6,6 +6,8 @@ Handled by - Adway
 
 import pygame
 
-pygame.init()
+class World:
+    
+    def __init__(self):
 
-print("Pygame initialized")
+        print("World created")
