@@ -3,3 +3,9 @@ This script manages the simulation world of the autonomous vehicle platform. It 
 
 Handled by - Adway
 """
+
+import pygame
+
+pygame.init()
+
+print("Pygame initialized")
