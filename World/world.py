@@ -29,3 +29,5 @@ class World:
         pygame.display.set_caption(
             "AutoStack AV Simulator"
         )
+
+        self.clock = pygame.time.Clock()
