@@ -49,8 +49,7 @@ class World:
 
     def draw(self):
 
-        self.screen.fill(
-            GRASS_COLOR
-        )
-
+        self.screen.fill(GRASS_COLOR)
+        road_x = (WINDOW_WIDTH - ROAD_WIDTH)//2
+        pygame.draw.rect(self.screen, ROAD_COLOR, (road_x, 0, ROAD_WIDTH, WINDOW_HEIGHT))
         pygame.display.flip()
