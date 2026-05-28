@@ -34,6 +34,7 @@ class World:
         while self.running:
 
             self.process_events()
+            self.draw()
             self.clock.tick(FPS)
 
         pygame.quit()
@@ -45,3 +46,11 @@ class World:
             if event.type == pygame.QUIT:
 
                 self.running = False
+
+    def draw(self):
+
+        self.screen.fill(
+            GRASS_COLOR
+        )
+
+        pygame.display.flip()
