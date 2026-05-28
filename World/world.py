@@ -7,11 +7,6 @@ Handled by - Adway
 import pygame
 from Utils.config import *
 
-class World:
-
-    def __init__(self):
-
-        print("World created")
 
 class World:
 
@@ -38,4 +33,14 @@ class World:
 
         while self.running:
 
-            pass
+            self.process_events()
+
+        pygame.quit()
+
+    def process_events(self):
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+
+                self.running = False
