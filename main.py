@@ -6,3 +6,4 @@ Handled by - Adway
 
 from World.world import World
 sim = World()
+sim.run()

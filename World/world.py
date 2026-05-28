@@ -17,6 +17,8 @@ class World:
 
     def __init__(self):
 
+        self.running = True
+
         pygame.init()
 
         self.screen = pygame.display.set_mode(
@@ -31,3 +33,9 @@ class World:
         )
 
         self.clock = pygame.time.Clock()
+
+    def run(self):
+
+        while self.running:
+
+            pass
