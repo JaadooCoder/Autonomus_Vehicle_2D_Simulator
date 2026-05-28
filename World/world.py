@@ -34,6 +34,7 @@ class World:
         while self.running:
 
             self.process_events()
+            self.clock.tick(FPS)
 
         pygame.quit()
 
