@@ -34,6 +34,7 @@ class World:
         self.car_x = left_lane_center - (self.car_width // 2)
         self.car_y = WINDOW_HEIGHT - 120
         self.obstacles = []
+        self.obstacles.append({"x": WINDOW_WIDTH // 2, "y": 250, "width": 40, "height": 40})
 
     def run(self):
 
