@@ -64,6 +64,9 @@ class World:
 
             pygame.draw.line(self.screen, LANE_COLOR, (WINDOW_WIDTH//2, y), (WINDOW_WIDTH//2, y+30), 5)
         pygame.draw.rect(self.screen, CAR_COLOR, (self.car_x, self.car_y, self.car_width, self.car_height))
+        for obstacle in self.obstacles:
+
+            pygame.draw.rect(self.screen, (0, 0, 255), (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
 
         pygame.display.flip()
 
