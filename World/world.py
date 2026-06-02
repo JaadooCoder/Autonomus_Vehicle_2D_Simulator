@@ -33,6 +33,7 @@ class World:
         left_lane_center = road_x + (ROAD_WIDTH // 4)
         self.car_x = left_lane_center - (self.car_width // 2)
         self.car_y = WINDOW_HEIGHT - 120
+        self.obstacles = []
 
     def run(self):
 
