@@ -95,7 +95,7 @@ class World:
             self.car_y = (WINDOW_HEIGHT - self.car_height)
 
         self.update_obstacles()
-        self.obstacles.append({"x": WINDOW_WIDTH // 2, "y": 250, "width": 40, "height": 40, "speed": 2})
+        self.obstacles.append(self.create_obsctacle(self.car_x, -50, CAR_SPEED))
         self.check_collisions()
 
     def update_obstacles(self):
@@ -115,3 +115,6 @@ class World:
 
             if car_rect.colliderect(obstacle_rect):
                 self.running = False
+
+    def create_obstacle(self, x, y, speed):
+        return {"x": x, "y": y, "width": 40, "height": 40, "speed": speed}
