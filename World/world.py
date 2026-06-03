@@ -93,3 +93,9 @@ class World:
             self.car_y = 0
         if self.car_y > WINDOW_HEIGHT - self.car_height:
             self.car_y = (WINDOW_HEIGHT - self.car_height)
+
+        self.update_obstacles()
+
+    def update_obstacles(self):
+
+        pass
