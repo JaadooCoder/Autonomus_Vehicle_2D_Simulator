@@ -102,3 +102,5 @@ class World:
         for obstacle in self.obstacles:
 
             obstacle["y"] += obstacle["speed"]
+        if obstacle["y"] > WINDOW_HEIGHT:
+            obstacle["y"] = -50
