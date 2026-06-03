@@ -114,4 +114,4 @@ class World:
             obstacle_rect = pygame.Rect(obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"])
 
             if car_rect.colliderect(obstacle_rect):
-                print("Collision")
+                self.running = False
