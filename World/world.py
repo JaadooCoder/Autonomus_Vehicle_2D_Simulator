@@ -96,6 +96,7 @@ class World:
 
         self.update_obstacles()
         self.obstacles.append({"x": WINDOW_WIDTH // 2, "y": 250, "width": 40, "height": 40, "speed": 2})
+        self.check_collisions()
 
     def update_obstacles(self):
 
@@ -104,3 +105,7 @@ class World:
             obstacle["y"] += obstacle["speed"]
         if obstacle["y"] > WINDOW_HEIGHT:
             obstacle["y"] = -50
+
+    def check_collisions(self):
+
+        pass
