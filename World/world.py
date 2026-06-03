@@ -108,4 +108,10 @@ class World:
 
     def check_collisions(self):
 
-        pass
+        car_rect = pygame.Rect(self.car_x, self.car_y, self.car_width, self.car_height)
+        for obstacle in self.obstacles:
+
+            obstacle_rect = pygame.Rect(obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"])
+
+            if car_rect.colliderect(obstacle_rect):
+                print("Collision")
