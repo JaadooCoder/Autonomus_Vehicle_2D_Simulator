@@ -81,13 +81,13 @@ class World:
     def update(self):
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             self.car_y -= CAR_SPEED
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.car_y += CAR_SPEED
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             self.car_x -= CAR_SPEED
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.car_x += CAR_SPEED
 
         road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
