@@ -6,7 +6,7 @@ Handled by - Adway
 
 import pygame
 from Utils.config import *
-
+import random
 
 class World:
 
@@ -30,11 +30,14 @@ class World:
         self.car_width = CAR_WIDTH
         self.car_height = CAR_HEIGHT
         road_x = (WINDOW_WIDTH - ROAD_WIDTH) // 2
-        left_lane_center = road_x + (ROAD_WIDTH // 4)
-        self.car_x = left_lane_center - (self.car_width // 2)
+        self.left_lane_center = road_x + (ROAD_WIDTH // 4)
+        self.right_lane_center = road_x + (3 * ROAD_WIDTH // 4)
+        self.car_x = self.left_lane_center - (self.car_width // 2)
         self.car_y = WINDOW_HEIGHT - 120
         self.obstacles = []
-        self.obstacles.append({"x": WINDOW_WIDTH // 2, "y": 250, "width": 40, "height": 40})
+        self.obstacles.append(self.create_obstacle(self.left_lane_center - 20, 250, 2))
+        self.obstacles.append(self.create_obstacle(self.right_lane_center - 20, -200, 3))
+        self.obstacles.append( self.create_obstacle( self.left_lane_center - 20, -500, 4))
 
     def run(self):
 
@@ -95,7 +98,6 @@ class World:
             self.car_y = (WINDOW_HEIGHT - self.car_height)
 
         self.update_obstacles()
-        self.obstacles.append(self.create_obsctacle(self.car_x, -50, CAR_SPEED))
         self.check_collisions()
 
     def update_obstacles(self):
@@ -103,8 +105,9 @@ class World:
         for obstacle in self.obstacles:
 
             obstacle["y"] += obstacle["speed"]
-        if obstacle["y"] > WINDOW_HEIGHT:
-            obstacle["y"] = -50
+            if obstacle["y"] > WINDOW_HEIGHT:
+                obstacle["y"] = -50
+                obstacle["x"] = random.choice([self.left_lane_center - 20, self.right_lane_center - 20])
 
     def check_collisions(self):
 
