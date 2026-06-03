@@ -13,6 +13,7 @@ class World:
     def __init__(self):
 
         self.running = True
+        self.crashed = False
         pygame.init()
 
         self.screen = pygame.display.set_mode(
@@ -61,6 +62,10 @@ class World:
     def draw(self):
 
         self.screen.fill(GRASS_COLOR)
+        if self.crashed:
+            self.screen.fill((255, 0, 0))
+            pygame.display.flip()
+            return
         road_x = (WINDOW_WIDTH - ROAD_WIDTH)//2
         pygame.draw.rect(self.screen, ROAD_COLOR, (road_x, 0, ROAD_WIDTH, WINDOW_HEIGHT))
         for y in range(0, WINDOW_HEIGHT, 60):
@@ -117,7 +122,7 @@ class World:
             obstacle_rect = pygame.Rect(obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"])
 
             if car_rect.colliderect(obstacle_rect):
-                self.running = False
+                self.crashed = True
 
     def create_obstacle(self, x, y, speed):
         return {"x": x, "y": y, "width": 40, "height": 40, "speed": speed}
