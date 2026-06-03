@@ -95,7 +95,10 @@ class World:
             self.car_y = (WINDOW_HEIGHT - self.car_height)
 
         self.update_obstacles()
+        self.obstacles.append({"x": WINDOW_WIDTH // 2, "y": 250, "width": 40, "height": 40, "speed": 2})
 
     def update_obstacles(self):
 
-        pass
+        for obstacle in self.obstacles:
+
+            obstacle["y"] += obstacle["speed"]
