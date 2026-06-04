@@ -8,32 +8,52 @@ Handled by - Adway
 
 WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 700
-
 FPS = 60
-
 
 # Colors
 
 WHITE = (255,255,255)
 BLACK = (0,0,0)
-
 ROAD_COLOR = (60,60,60)
-
 GRASS_COLOR = (30,120,30)
-
 LANE_COLOR = (255,255,255)
-
 CAR_COLOR = (255,0,0)
-
+VEHICLE_COLOR = (0,0,255)
+PEDESTRIAN_COLOR = (255,255,0)
+OBJECT_COLOR = (150,150,150)
 
 # Road settings
 
 ROAD_WIDTH = 300
 
-
 # Car settings
 
 CAR_WIDTH = 40
 CAR_HEIGHT = 60
-
 CAR_SPEED = 5
+
+# Obstacle settings
+
+OBSTACLE_WIDTH = 40
+OBSTACLE_HEIGHT = 40
+
+# Vehicle physics
+
+MAX_SPEED = 8
+ACCELERATION = 0.2
+BRAKE_FORCE = 0.4
+FRICTION = 0.98
+
+#Lane Settings
+
+LANE_COUNT = 2
+
+#Pedestrian Settings
+
+PEDESTRIAN_SPEED = 1
+
+# NPC vehicle settings
+
+NPC_MIN_SPEED = 2
+NPC_MAX_SPEED = 5
+LANE_DRIFT_SPEED = 0.5

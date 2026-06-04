@@ -28,17 +28,23 @@ class World:
         )
 
         self.clock = pygame.time.Clock()
-        self.car_width = CAR_WIDTH
-        self.car_height = CAR_HEIGHT
         road_x = (WINDOW_WIDTH - ROAD_WIDTH) // 2
         self.left_lane_center = road_x + (ROAD_WIDTH // 4)
         self.right_lane_center = road_x + (3 * ROAD_WIDTH // 4)
+        self.road_offset = 0
+        self.car_width = CAR_WIDTH
+        self.car_height = CAR_HEIGHT
         self.car_x = self.left_lane_center - (self.car_width // 2)
         self.car_y = WINDOW_HEIGHT - 120
+        self.speed = 0
+        self.max_speed = MAX_SPEED
+        self.acceleration = ACCELERATION
+        self.brake_force = BRAKE_FORCE
         self.obstacles = []
-        self.obstacles.append(self.create_obstacle(self.left_lane_center - 20, 250, 2))
-        self.obstacles.append(self.create_obstacle(self.right_lane_center - 20, -200, 3))
-        self.obstacles.append( self.create_obstacle( self.left_lane_center - 20, -500, 4))
+        self.obstacles.append(self.create_obstacle(OBSTACLE_WIDTH // 2, 250, 2))
+        self.obstacles.append(self.create_obstacle(OBSTACLE_WIDTH // 2, -200, 3))
+        self.obstacles.append( self.create_obstacle(OBSTACLE_WIDTH // 2, -500, 4))
+        
 
     def run(self):
 
@@ -46,6 +52,7 @@ class World:
 
             self.process_events()
             self.update()
+            pygame.display.set_caption(f"AutoStack AV Simulator | Speed: {self.speed:.1f}")
             self.draw()
             self.clock.tick(FPS)
 
@@ -61,30 +68,38 @@ class World:
 
     def draw(self):
 
-        self.screen.fill(GRASS_COLOR)
         if self.crashed:
             self.screen.fill((255, 0, 0))
             pygame.display.flip()
             return
+        self.screen.fill(GRASS_COLOR)
         road_x = (WINDOW_WIDTH - ROAD_WIDTH)//2
         pygame.draw.rect(self.screen, ROAD_COLOR, (road_x, 0, ROAD_WIDTH, WINDOW_HEIGHT))
-        for y in range(0, WINDOW_HEIGHT, 60):
-
-            pygame.draw.line(self.screen, LANE_COLOR, (WINDOW_WIDTH//2, y), (WINDOW_WIDTH//2, y+30), 5)
+        for y in range(-60, WINDOW_HEIGHT + 60, 60):
+            draw_y = y + self.road_offset
+            pygame.draw.line(self.screen, LANE_COLOR, (WINDOW_WIDTH // 2, draw_y), (WINDOW_WIDTH // 2, draw_y + 30), 5)
         pygame.draw.rect(self.screen, CAR_COLOR, (self.car_x, self.car_y, self.car_width, self.car_height))
         for obstacle in self.obstacles:
-
-            pygame.draw.rect(self.screen, (0, 0, 255), (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
+            pygame.draw.rect(self.screen, VEHICLE_COLOR, (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
 
         pygame.display.flip()
 
     def update(self):
 
+        if self.crashed:
+            return
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            self.car_y -= CAR_SPEED
+            self.speed += self.acceleration
         if keys[pygame.K_s]:
-            self.car_y += CAR_SPEED
+            self.speed -= self.brake_force
+        if self.speed > self.max_speed:
+            self.speed = self.max_speed
+        if self.speed < 0:
+            self.speed = 0
+        self.speed *= FRICTION
+        if self.speed < 0.05:
+            self.speed = 0
         if keys[pygame.K_a]:
             self.car_x -= CAR_SPEED
         if keys[pygame.K_d]:
@@ -97,22 +112,23 @@ class World:
             self.car_x = road_left
         if self.car_x > road_right:
             self.car_x = road_right
-        if self.car_y < 0:
-            self.car_y = 0
-        if self.car_y > WINDOW_HEIGHT - self.car_height:
-            self.car_y = (WINDOW_HEIGHT - self.car_height)
-
+        self.road_offset += self.speed
+        if self.road_offset >= 60:
+            self.road_offset -= 60
+        
         self.update_obstacles()
         self.check_collisions()
+    
 
     def update_obstacles(self):
 
         for obstacle in self.obstacles:
 
-            obstacle["y"] += obstacle["speed"]
+            obstacle["y"] += (obstacle["speed"] + self.speed)
             if obstacle["y"] > WINDOW_HEIGHT:
-                obstacle["y"] = -50
+                obstacle["y"] = random.randint(-500, -50)
                 obstacle["x"] = random.choice([self.left_lane_center - 20, self.right_lane_center - 20])
+                obstacle["speed"] = random.randint(NPC_MIN_SPEED, NPC_MAX_SPEED)
 
     def check_collisions(self):
 
@@ -125,4 +141,4 @@ class World:
                 self.crashed = True
 
     def create_obstacle(self, x, y, speed):
-        return {"x": x, "y": y, "width": 40, "height": 40, "speed": speed}
+        return {"x": x, "y": y, "width": OBSTACLE_WIDTH, "height": OBSTACLE_HEIGHT, "speed": speed}
