@@ -41,9 +41,10 @@ class World:
         self.acceleration = ACCELERATION
         self.brake_force = BRAKE_FORCE
         self.obstacles = []
-        self.obstacles.append(self.create_obstacle(OBSTACLE_WIDTH // 2, 250, 2))
-        self.obstacles.append(self.create_obstacle(OBSTACLE_WIDTH // 2, -200, 3))
-        self.obstacles.append( self.create_obstacle(OBSTACLE_WIDTH // 2, -500, 4))
+        self.obstacles.append(self.create_obstacle("vehicle", self.left_lane_center - (NPC_WIDTH // 2),-100, 3))
+        self.obstacles.append(self.create_obstacle("pedestrian", (WINDOW_WIDTH - ROAD_WIDTH)//2, 250, 1))
+        self.obstacles.append(self.create_obstacle("object", self.right_lane_center - (OBSTACLE_WIDTH // 2), -400, 0))
+
         
 
     def run(self):
@@ -80,7 +81,13 @@ class World:
             pygame.draw.line(self.screen, LANE_COLOR, (WINDOW_WIDTH // 2, draw_y), (WINDOW_WIDTH // 2, draw_y + 30), 5)
         pygame.draw.rect(self.screen, CAR_COLOR, (self.car_x, self.car_y, self.car_width, self.car_height))
         for obstacle in self.obstacles:
-            pygame.draw.rect(self.screen, VEHICLE_COLOR, (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
+            if obstacle["type"] == "pedestrian":
+                color = PEDESTRIAN_COLOR
+            elif obstacle["type"] == "vehicle":
+                color = VEHICLE_COLOR
+            else:
+                color = OBJECT_COLOR
+            pygame.draw.rect(self.screen, color, (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
 
         pygame.display.flip()
 
@@ -122,13 +129,66 @@ class World:
 
     def update_obstacles(self):
 
+        current_time = pygame.time.get_ticks()
         for obstacle in self.obstacles:
-
-            obstacle["y"] += (obstacle["speed"] + self.speed)
+            if (current_time - obstacle["decision_timer"]) > (BEHAVIOUR_CHANGE_TIME * 1000):
+                obstacle["decision_timer"] = current_time
+                if obstacle["type"] == "pedestrian":
+                    obstacle["behavior"] = random.choice(["stand", "cross"])
+                elif obstacle["type"] == "vehicle":
+                    obstacle["behavior"] = random.choice(["stop", "forward", "turn_left", "turn_right"])
+            world_scroll = self.speed
+            if obstacle["type"] == "pedestrian":
+                obstacle["y"] += world_scroll
+                if obstacle["behavior"] == "cross":
+                    obstacle["x"] += PEDESTRIAN_SPEED
+                    if obstacle["x"] > ((WINDOW_WIDTH + ROAD_WIDTH) // 2):
+                        obstacle["behavior"] = "respawn"
+                if obstacle["behavior"] == "respawn":
+                    obstacle["x"] = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+                    obstacle["y"] = random.randint(50, WINDOW_HEIGHT - 100)
+                    obstacle["behavior"] = random.choice(["stand", "cross"])
+                    obstacle["decision_timer"] = current_time
+            elif obstacle["type"] == "vehicle":
+                if obstacle["behavior"] == "forward":
+                    obstacle["y"] += max(1, self.speed * 0.7)
+                elif obstacle["behavior"] == "turn_left":
+                    obstacle["y"] += max(1, self.speed * 0.7)
+                    obstacle["x"] -= LANE_DRIFT_SPEED
+                    if obstacle["x"] < (self.left_lane_center - (NPC_WIDTH // 2)):
+                        obstacle["behavior"] = "forward"
+                        obstacle["decision_timer"] = current_time
+                elif obstacle["behavior"] == "turn_right":
+                    obstacle["y"] += max(1, self.speed * 0.7)
+                    obstacle["x"] += LANE_DRIFT_SPEED
+                    if obstacle["x"] > (self.right_lane_center - (NPC_WIDTH // 2)):
+                        obstacle["behavior"] = "forward"
+                        obstacle["decision_timer"] = current_time
+                elif obstacle["behavior"] == "stop":
+                    pass
+            elif obstacle["type"] == "object":
+                obstacle["y"] += self.speed
+            if obstacle["type"] == "vehicle":
+                road_left = ((WINDOW_WIDTH - ROAD_WIDTH) // 2)
+                road_right = (road_left + ROAD_WIDTH - obstacle["width"])
+                if obstacle["x"] < road_left:
+                    obstacle["x"] = road_left
+                if obstacle["x"] > road_right:
+                    obstacle["x"] = road_right
             if obstacle["y"] > WINDOW_HEIGHT:
-                obstacle["y"] = random.randint(-500, -50)
-                obstacle["x"] = random.choice([self.left_lane_center - 20, self.right_lane_center - 20])
-                obstacle["speed"] = random.randint(NPC_MIN_SPEED, NPC_MAX_SPEED)
+                if obstacle["type"] == "vehicle":
+                    obstacle["y"] = random.randint(-500, -50)
+                    obstacle["x"] = random.choice([self.left_lane_center - (NPC_WIDTH // 2), self.right_lane_center - (NPC_WIDTH // 2)])
+                    obstacle["speed"] = random.randint(NPC_MIN_SPEED, NPC_MAX_SPEED)
+                    obstacle["behavior"] = "forward"
+                    obstacle["decision_timer"] = current_time
+                elif obstacle["type"] == "object":
+                    obstacle["y"] = random.randint(-500, -50)
+                    obstacle["x"] = random.choice([ self.left_lane_center - (OBSTACLE_WIDTH // 2), self.right_lane_center - (OBSTACLE_WIDTH // 2)])
+
+                elif obstacle["type"] == "pedestrian":
+                    obstacle["x"] = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+                    obstacle["y"] = random.randint(50, WINDOW_HEIGHT - 100)
 
     def check_collisions(self):
 
@@ -140,5 +200,31 @@ class World:
             if car_rect.colliderect(obstacle_rect):
                 self.crashed = True
 
-    def create_obstacle(self, x, y, speed):
-        return {"x": x, "y": y, "width": OBSTACLE_WIDTH, "height": OBSTACLE_HEIGHT, "speed": speed}
+    def create_obstacle(self, obstacle_type, x, y, speed):
+       
+        if obstacle_type == "pedestrian":
+                width = PEDESTRIAN_WIDTH
+                height = PEDESTRIAN_HEIGHT
+                behavior = random.choice(["stand", "cross"])
+
+        elif obstacle_type == "vehicle":
+                width = NPC_WIDTH
+                height = NPC_HEIGHT
+                behavior = random.choice(["forward"])
+
+        else:
+                width = OBSTACLE_WIDTH
+                height = OBSTACLE_HEIGHT
+                behavior = "static"
+
+        return {
+                "type": obstacle_type,
+                "behavior": behavior,
+                "decision_timer": pygame.time.get_ticks(),
+                "x": x,
+                "y": y,
+                "width": width,
+                "height": height,
+                "speed": speed
+               }
+        
