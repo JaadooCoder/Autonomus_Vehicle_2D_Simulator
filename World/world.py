@@ -7,6 +7,7 @@ Handled by - Adway
 import pygame
 from Utils.config import *
 import random
+from Sensors.sensors import Sensor
 
 class World:
 
@@ -14,6 +15,7 @@ class World:
 
         self.running = True
         self.crashed = False
+        self.sensor = Sensor(self)
         pygame.init()
 
         self.screen = pygame.display.set_mode(
@@ -80,6 +82,10 @@ class World:
             draw_y = y + self.road_offset
             pygame.draw.line(self.screen, LANE_COLOR, (WINDOW_WIDTH // 2, draw_y), (WINDOW_WIDTH // 2, draw_y + 30), 5)
         pygame.draw.rect(self.screen, CAR_COLOR, (self.car_x, self.car_y, self.car_width, self.car_height))
+        pygame.draw.circle(self.screen, (0, 255, 255), (self.car_x + (self.car_width // 2), self.car_y + (self.car_height // 2)), SENSOR_RANGE, 1)
+        detected_objects = self.sensor.get_detected_objects()
+        for detection in detected_objects:
+            pygame.draw.line(self.screen, (255, 255, 0), (self.car_x + (self.car_width // 2), self.car_y + (self.car_height // 2)), (detection["x"], detection["y"]), 2)
         for obstacle in self.obstacles:
             if obstacle["type"] == "pedestrian":
                 color = PEDESTRIAN_COLOR
@@ -124,6 +130,11 @@ class World:
             self.road_offset -= 60
         
         self.update_obstacles()
+        self.sensor.detect_objects()
+        print(self.sensor.get_nearest_object())
+        print(self.sensor.get_nearest_vehicle())
+        print(self.sensor.get_nearest_pedestrian())
+        print(self.sensor.get_nearest_obstacle())
         self.check_collisions()
     
 
