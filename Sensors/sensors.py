@@ -5,6 +5,8 @@ Handled by - Adway
 """
 
 from Utils.config import *
+import pygame
+
 
 class Sensor:
 
@@ -102,3 +104,19 @@ class Sensor:
     def get_detected_objects(self):
 
         return self.detect_objects()
+
+    def get_camera_crop(self):
+        crop_width = 200
+        crop_height = 150
+        
+        car_center_x = self.world.car_x + self.world.car_width // 2
+        crop_x = int(car_center_x - crop_width // 2)
+        crop_y = int(self.world.car_y - crop_height)
+        
+        # Clamp coordinates to screen boundaries
+        crop_x = max(0, min(crop_x, WINDOW_WIDTH - crop_width))
+        crop_y = max(0, min(crop_y, WINDOW_HEIGHT - crop_height))
+        
+        rect = pygame.Rect(crop_x, crop_y, crop_width, crop_height)
+        # Capture and copy the subsurface to get a snapshot of the screen at this point
+        return self.world.screen.subsurface(rect).copy()

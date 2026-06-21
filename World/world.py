@@ -8,6 +8,10 @@ import pygame
 from Utils.config import *
 import random
 from Sensors.sensors import Sensor
+from Perception.perception import Perception
+from Planning.planning import Planner
+from Control.control import VehicleController
+
 
 class World:
 
@@ -15,8 +19,19 @@ class World:
 
         self.running = True
         self.crashed = False
-        self.sensor = Sensor(self)
         pygame.init()
+        pygame.font.init()
+        self.sensor = Sensor(self)
+        self.perception = Perception(self)
+        self.planner = Planner(self)
+        self.controller = VehicleController(self)
+        
+        self.autonomous = False
+        self.edges_surface = None
+        self.target_x = 0
+        self.planner_state = "FOLLOW_LANE"
+        self.font = pygame.font.SysFont("Arial", 20)
+
 
         self.screen = pygame.display.set_mode(
             (
@@ -68,11 +83,19 @@ class World:
             if event.type == pygame.QUIT:
 
                 self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_TAB:
+                    self.autonomous = not self.autonomous
+                    print(f"Switched control mode. Autonomous: {self.autonomous}")
+
 
     def draw(self):
 
         if self.crashed:
             self.screen.fill((255, 0, 0))
+            crashed_text = self.font.render("COLLISION DETECTED! GAME OVER", True, (255, 255, 255))
+            text_rect = crashed_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+            self.screen.blit(crashed_text, text_rect)
             pygame.display.flip()
             return
         self.screen.fill(GRASS_COLOR)
@@ -95,17 +118,52 @@ class World:
                 color = OBJECT_COLOR
             pygame.draw.rect(self.screen, color, (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
 
+        # Draw PiP Window
+        pygame.draw.rect(self.screen, (255, 255, 255), (WINDOW_WIDTH - 225, 15, 210, 160), 2)
+        if self.autonomous and self.edges_surface is not None:
+            self.screen.blit(self.edges_surface, (WINDOW_WIDTH - 220, 20))
+        else:
+            raw_crop = self.sensor.get_camera_crop()
+            self.screen.blit(raw_crop, (WINDOW_WIDTH - 220, 20))
+            
+        # Draw HUD overlays
+        mode_color = (0, 255, 0) if self.autonomous else (255, 255, 255)
+        mode_text = self.font.render(f"MODE: {'AUTONOMOUS' if self.autonomous else 'MANUAL'} (TAB to toggle)", True, mode_color)
+        self.screen.blit(mode_text, (20, 20))
+        
+        state_text = self.font.render(f"FSM STATE: {self.planner_state if self.autonomous else 'N/A'}", True, (255, 255, 0))
+        self.screen.blit(state_text, (20, 50))
+        
+        speed_text = self.font.render(f"SPEED: {self.speed:.2f} / {MAX_SPEED}", True, (255, 255, 255))
+        self.screen.blit(speed_text, (20, 80))
+
         pygame.display.flip()
+
 
     def update(self):
 
         if self.crashed:
             return
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            self.speed += self.acceleration
-        if keys[pygame.K_s]:
-            self.speed -= self.brake_force
+            
+        if not self.autonomous:
+            # Manual keyboard control
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_w]:
+                self.speed += self.acceleration
+            if keys[pygame.K_s]:
+                self.speed -= self.brake_force
+            if keys[pygame.K_a]:
+                self.car_x -= CAR_SPEED
+            if keys[pygame.K_d]:
+                self.car_x += CAR_SPEED
+        else:
+            # Autonomous control pipeline
+            crop_surface = self.sensor.get_camera_crop()
+            self.edges_surface, self.target_x, obstacle_info = self.perception.process(crop_surface, self.planner.target_lane)
+            self.planner_state, target_lane, target_speed = self.planner.update(obstacle_info)
+            self.controller.control(self.target_x, target_speed)
+
+        # Apply physics and constraints
         if self.speed > self.max_speed:
             self.speed = self.max_speed
         if self.speed < 0:
@@ -113,10 +171,6 @@ class World:
         self.speed *= FRICTION
         if self.speed < 0.05:
             self.speed = 0
-        if keys[pygame.K_a]:
-            self.car_x -= CAR_SPEED
-        if keys[pygame.K_d]:
-            self.car_x += CAR_SPEED
 
         road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
         road_right = (road_left + ROAD_WIDTH) - self.car_width
@@ -125,17 +179,15 @@ class World:
             self.car_x = road_left
         if self.car_x > road_right:
             self.car_x = road_right
+            
         self.road_offset += self.speed
         if self.road_offset >= 60:
             self.road_offset -= 60
         
         self.update_obstacles()
         self.sensor.detect_objects()
-        print(self.sensor.get_nearest_object())
-        print(self.sensor.get_nearest_vehicle())
-        print(self.sensor.get_nearest_pedestrian())
-        print(self.sensor.get_nearest_obstacle())
         self.check_collisions()
+
     
 
     def update_obstacles(self):
