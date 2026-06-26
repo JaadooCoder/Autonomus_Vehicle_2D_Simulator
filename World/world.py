@@ -11,6 +11,7 @@ from Sensors.sensors import Sensor
 from Perception.perception import Perception
 from Planning.planning import Planner
 from Control.control import VehicleController
+from Dashboard.dashboard import Dashboard
 
 
 class World:
@@ -25,6 +26,7 @@ class World:
         self.perception = Perception(self)
         self.planner = Planner(self)
         self.controller = VehicleController(self)
+        self.dashboard = Dashboard(self)
         
         self.autonomous = False
         self.edges_surface = None
@@ -118,25 +120,7 @@ class World:
                 color = OBJECT_COLOR
             pygame.draw.rect(self.screen, color, (obstacle["x"], obstacle["y"], obstacle["width"], obstacle["height"]))
 
-        # Draw PiP Window
-        pygame.draw.rect(self.screen, (255, 255, 255), (WINDOW_WIDTH - 225, 15, 210, 160), 2)
-        if self.autonomous and self.edges_surface is not None:
-            self.screen.blit(self.edges_surface, (WINDOW_WIDTH - 220, 20))
-        else:
-            raw_crop = self.sensor.get_camera_crop()
-            self.screen.blit(raw_crop, (WINDOW_WIDTH - 220, 20))
-            
-        # Draw HUD overlays
-        mode_color = (0, 255, 0) if self.autonomous else (255, 255, 255)
-        mode_text = self.font.render(f"MODE: {'AUTONOMOUS' if self.autonomous else 'MANUAL'} (TAB to toggle)", True, mode_color)
-        self.screen.blit(mode_text, (20, 20))
-        
-        state_text = self.font.render(f"FSM STATE: {self.planner_state if self.autonomous else 'N/A'}", True, (255, 255, 0))
-        self.screen.blit(state_text, (20, 50))
-        
-        speed_text = self.font.render(f"SPEED: {self.speed:.2f} / {MAX_SPEED}", True, (255, 255, 255))
-        self.screen.blit(speed_text, (20, 80))
-
+        self.dashboard.draw()    
         pygame.display.flip()
 
 
