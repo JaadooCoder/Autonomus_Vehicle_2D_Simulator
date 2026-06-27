@@ -1,0 +1,44 @@
+# ==========================
+# Python
+# ==========================
+
+# Virtual Environment
+venv/
+venv_backup/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code
+.vscode/
+
+# OS Files
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Environment Variables
+.env
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Build Files
+build/
+dist/
+*.egg-info/
